@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Api from "../../../api";
 import styled from "styled-components/native";
 import NumericTextInput from "../../../components/NumericTextInput";
 import RedButton from "../../../components/RedButton";
 
-export default ({ navigation }) => {
-  const [myPoint, setMyPoint] = useState();
+export default ({ navigation,loading }) => {
+  const [isLoading, setIsLoading] = useState(loading);
+  const [userData, setUserData] = useState();
   const [pointData, setPointData] = useState();
 
   const getMyPoint = async () => {
@@ -23,11 +25,30 @@ export default ({ navigation }) => {
     }
   };
 
+  const getData = async () => {
+    const response = await Api.getUserInfo();
+    if (response.status == 200) {
+      setUserData(response.data[0]);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    getMyPoint();
+    getData();
   }, []);
 
-  return (
+  return isLoading ? (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "white",
+      }}
+    >
+      <ActivityIndicator size="small" color="purple" />
+    </View>
+  ) : (
     <Container>
       <Content>
         <Title>충전할 금액을 입력해주세요.</Title>
@@ -47,15 +68,38 @@ export default ({ navigation }) => {
       <PointWrap>
         <RowContent>
           <Text>현재 포인트</Text>
-          <Text>{myPoint} P</Text>
+          <Text>{userData.point} P</Text>
         </RowContent>
         <RowContent>
 
           <Text>충전 후 포인트</Text>
-          <Text>{myPoint} P</Text>
+          <Text>{userData.point} P</Text>
         </RowContent>
 
       </PointWrap>
+
+
+      <Profile>
+        <UserInfo>
+          <TextWrap>
+            <Text>닉네임</Text>
+            <Text>{userData.nickname}</Text>
+          </TextWrap>
+          <TextWrap>
+            <Text>이메일</Text>
+            <Text>{userData.email}</Text>
+          </TextWrap>
+          <TextWrap>
+            <Text>전화번호</Text>
+            <Text>{userData.phoneNumber}</Text>
+          </TextWrap>
+          <TextWrap>
+            <Text>포인트</Text>
+            <Text>{userData.point}</Text>
+          </TextWrap>
+        </UserInfo>
+      </Profile>
+
       <Footer>
         <RedButton fc={chargePoint} name={"충전하기"} />
       </Footer>
@@ -110,3 +154,39 @@ const Text = styled.Text`
   font-size: 20px;
   margin: 2px;
 `;
+
+const Footer = styled.View`
+  position: absolute;
+  bottom: 0;
+  height: 7%;
+  width: 100%;
+  background-color: white;
+  border-top-color: #cacaca;
+  border-top-width: 0.2px;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+`;
+
+const Profile = styled.TouchableOpacity`
+  width: 100%;
+  height: 180px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #f2e7fe;
+  margin-bottom: 15px;
+`;
+
+const UserInfo = styled.View`
+  width: 70%;
+  align-items: flex-end;
+`;
+
+const TextWrap = styled.View`
+  width: 80%;
+  margin: 5px;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
