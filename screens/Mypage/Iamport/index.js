@@ -26,6 +26,7 @@ export default ({ navigation, route }) => {
   );   
 }
 
+
 export function getUserCode(pg) {
   return 'imp09408477';
 }
